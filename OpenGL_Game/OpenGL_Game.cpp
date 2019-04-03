@@ -8,11 +8,71 @@
 #include <iostream>
 using namespace std;
 
-// Function prototype for loading texture method
-
 GLuint Tex1;
 GLuint Tex2;
+
+// Function prototype for loading texture method
 GLuint glmLoadTextureBMP(char *);
+
+GLuint glmLoadTextureBMP(char * fname)
+{
+	wchar_t* wString = new wchar_t[256]; // Convert char[] string to LPSTR/wchar
+	MultiByteToWideChar(CP_ACP, 0, fname, -1, wString, 256);
+	HANDLE hBitMap = LoadImage(0, wString, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);
+
+	BITMAP bitmap;
+	GetObject(hBitMap, sizeof(BITMAP), &bitmap);
+	int size = bitmap.bmHeight*bitmap.bmWidth*((bitmap.bmBitsPixel / 8) + 1);
+	BYTE *lpBits = new BYTE[size];
+	int PaddedWidth = (bitmap.bmWidth + 3) & (~3); // Round width up to next multiple of 4
+	GetBitmapBits((HBITMAP)hBitMap, size, lpBits);
+	BYTE r, g, b, a;
+	int templ, tempr;
+
+	for (int j = 0; j < size; j += 4) // Magenta RGBA=(255,0,255) tunrs transparent
+	{
+		if ((lpBits[j + 2] == 255) && (lpBits[j + 1] == 0) && (lpBits[j] == 255))
+		{
+			/*Red*/lpBits[j + 0] = 0; /*Green*/lpBits[j + 1] = 0; /*Blue*/lpBits[j + 2] = 0; /*Alpha*/lpBits[j + 3] = 0;
+		}
+		else
+		{
+			// Reverse BGRA to RGBA and force A=255 (Alpha 100%)
+			/*Red*/r = lpBits[j + 0]; /*Green*/g = lpBits[j + 1]; /*Blue*/b = lpBits[j + 2]; /*Alpha*/a = lpBits[j + 3];
+			a = 255; // 100% of the sprite (0% of the background)
+			/*Red*/lpBits[j + 0] = b; /*Green*/lpBits[j + 1] = g; /*Blue*/lpBits[j + 2] = r; /*Alpha*/lpBits[j + 3] = a;
+		}
+	}
+
+	BYTE rgb;  // Flip texture vertical (inefficient but only done on initalisation)
+	for (int j = 0; j < bitmap.bmHeight / 2; j++)
+	{
+		for (int i = 0; i < PaddedWidth; i++)
+		{
+			for (int k = 0; k < 4; k++)
+			{
+				templ = 4 * (i + (j*PaddedWidth));    // Address of pixel at top
+				tempr = 4 * (i + ((bitmap.bmHeight - j - 1)*PaddedWidth));	// Address of pixel at bottom
+				rgb = lpBits[tempr + k];
+				lpBits[tempr + k] = lpBits[templ + k];
+				lpBits[templ + k] = rgb;
+			}
+		}
+	}
+	GLuint textureID;
+	glGenTextures(1, &textureID);  // Create 1 texture
+	// "Bind" the newly created texture address with an ID
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	// Turn on and configure texture mapping, texture copied into OpenGL/Graphics card 
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, bitmap.bmWidth, bitmap.bmHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, (GLvoid *)lpBits);
+	// Magnification filter (texel larger than the pixel)
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	// Minification filter (texel smaller than the pixel) _
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	// Free system memory used to store texture (it is now been transfered to the graphics card)
+	delete[]lpBits;
+	return textureID;
+}
 
 // Global variables
 
@@ -101,20 +161,20 @@ static void car_control()
 	// FORWARDS
 	if (wkey == true)
 	{
-		speed += 0.05;
-		if (speed > 0.5)
+		speed += 0.1;
+		if (speed > 1)
 		{
-			speed = 0.8;
+			speed = 1;
 		}
 	}
 
 	// BACKWARDS
 	if (skey == true)
 	{
-		speed -= 0.05;
-		if (speed < -0.5)
+		speed -= 0.1;
+		if (speed < -1)
 		{
-			speed = -0.8;
+			speed = -1;
 		}
 	}
 
@@ -180,70 +240,11 @@ static void display(void)
 	glEnable(GL_BLEND);       // Enable Alpha blending of textures
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	car(px, py, theta, Tex2);
+	car(px, py, theta, Tex1);
+	car(200, 200, 50, Tex2);
 
 	glutSwapBuffers();
 	
-}
-
-GLuint glmLoadTextureBMP(char * fname)  
-{
-    wchar_t* wString=new wchar_t[256]; // Convert char[] string to LPSTR/wchar
-    MultiByteToWideChar(CP_ACP, 0, fname, -1, wString, 256);
-    HANDLE hBitMap = LoadImage(0,wString, IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE);  
-    
-    BITMAP bitmap;
-    GetObject(hBitMap,sizeof(BITMAP),&bitmap);
-    int size = bitmap.bmHeight*bitmap.bmWidth*((bitmap.bmBitsPixel/8)+1);  	
-    BYTE *lpBits = new BYTE[ size ];
-    int PaddedWidth = (bitmap.bmWidth  + 3) & (~3); // Round width up to next multiple of 4
-    GetBitmapBits((HBITMAP)hBitMap,size,lpBits ); 
-    BYTE r,g,b,a;
-    int templ,tempr;
-    
-    for(int j=0;j<size;j+=4) // Magenta RGBA=(255,0,255) tunrs transparent
-    {
-	if((lpBits[j+2]==255)&&(lpBits[j+1]==0)&&(lpBits[j]==255))  
-	{
-	 /*Red*/lpBits[j+0]=0; /*Green*/lpBits[j+1]=0; /*Blue*/lpBits[j+2]=0; /*Alpha*/lpBits[j+3]=0; 
-	}
-	else
-	{
-        // Reverse BGRA to RGBA and force A=255 (Alpha 100%)
-	/*Red*/r=lpBits[j+0]; /*Green*/g=lpBits[j+1]; /*Blue*/b=lpBits[j+2]; /*Alpha*/a=lpBits[j+3]; 
-	a=255; // 100% of the sprite (0% of the background)
-	/*Red*/lpBits[j+0]=b; /*Green*/lpBits[j+1]=g; /*Blue*/lpBits[j+2]=r; /*Alpha*/lpBits[j+3]=a;
-	}
-    }
-
-    BYTE rgb;  // Flip texture vertical (inefficient but only done on initalisation)
-    for(int j=0;j<bitmap.bmHeight/2;j++)   
-    {
-	for(int i=0;i<PaddedWidth;i++)
-	{
-	  for(int k=0;k<4;k++)
-	  {
-             templ=4*(i+(j*PaddedWidth));    // Address of pixel at top
-	     tempr=4*(i+((bitmap.bmHeight-j-1)*PaddedWidth));	// Address of pixel at bottom
-	     rgb=lpBits[tempr+k];								
-             lpBits[tempr+k]=lpBits[templ+k];
-             lpBits[templ+k]=rgb;
-	  }
-	}
-    }
-    GLuint textureID;
-    glGenTextures(1, &textureID);  // Create 1 texture
-    // "Bind" the newly created texture address with an ID
-    glBindTexture(GL_TEXTURE_2D, textureID);
-    // Turn on and configure texture mapping, texture copied into OpenGL/Graphics card 
-    glTexImage2D(GL_TEXTURE_2D,0, GL_RGBA,bitmap.bmWidth,bitmap.bmHeight,0,GL_RGBA,GL_UNSIGNED_BYTE, (GLvoid *) lpBits);
-    // Magnification filter (texel larger than the pixel)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // Minification filter (texel smaller than the pixel) _
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    // Free system memory used to store texture (it is now been transfered to the graphics card)
-    delete []lpBits;
-    return textureID;
 }
 
 static void idle(int v)
@@ -269,7 +270,6 @@ int _tmain(int argc, char** argv)      // Entry point of program
 	glutSetKeyRepeat(GLUT_KEY_REPEAT_OFF);
 	glutKeyboardFunc(key_down); 
 	glutKeyboardUpFunc(key_up);
-	//glutIdleFunc(idle);
 	glutTimerFunc(10, idle, 0);
 	glutDisplayFunc(display);
 	glutMainLoop();			    // Start Glut main loop, exit via break
