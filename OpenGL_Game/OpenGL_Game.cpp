@@ -4,27 +4,19 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <freeglut.h>
-
+#include <cstdlib>
 #include <iostream>
 using namespace std;
 
 // Function prototype for loading texture method
+
+GLuint Tex1;
+GLuint Tex2;
 GLuint glmLoadTextureBMP(char *);
 
 // Global variables
-float player_x_position = 200;
-float player_y_position = 200;
-float rotation = 0;
-float angle = 0;
-float speed = 0;
 
 int frame = 1; 
-
-static void idle()
-{
-	glutPostRedisplay();
-} 
-
 
 bool wkey = false;
 bool skey = false;
@@ -73,110 +65,124 @@ static void key_up(unsigned char key, int x, int y)
 
 }
 
-static void car_control(void)
+static void car(float x, float y, float ang, GLuint tex) {
+	glPushMatrix();
+
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	
+	float ox = x + 16;
+	float oy = y + 30;
+	
+	glTranslatef(ox, oy, 0.0); // 3. Translate to the object's position.
+	glRotatef(ang, 0.0, 0.0, 1.0); // 2. Rotate the object.
+	glTranslatef(-ox, -oy, 0.0); // 1. Translate to the origin.
+	glBegin(GL_QUADS);
+		glTexCoord2f(frame / 19.0, 0);
+		glVertex2i(x, y);
+		glTexCoord2f((frame + 1) / 19.0, 0);
+		glVertex2i(x + 32, y);
+		glTexCoord2f((frame + 1) / 19.0, 1);
+		glVertex2i(x + 32, y + 60);
+		glTexCoord2f(frame / 19.0, 1);
+		glVertex2i(x, y + 60);
+	glEnd();
+	glPopMatrix();
+
+}
+
+float px = 100;
+float py = 100;
+float theta = 0;
+float speed = 0;
+
+static void car_control()
 {
 	// FORWARDS
-	if(wkey == true)
+	if (wkey == true)
 	{
 		speed += 0.05;
-		if(speed > 0.5)
+		if (speed > 0.5)
 		{
-			speed = 0.5;
+			speed = 0.8;
 		}
 	}
 
 	// BACKWARDS
-	if(skey == true)
+	if (skey == true)
 	{
-		speed -= 0.05; 
-		if(speed < -0.5)
+		speed -= 0.05;
+		if (speed < -0.5)
 		{
-			speed = -0.5;
+			speed = -0.8;
 		}
 	}
 
-	// SPEED DAMPENER
-	if(wkey == false || skey == false)
-	{
-		speed *= 0.992;
-	}
-	// SPEED ZEROER
-	if(speed > -0.0001 && speed < 0.0001)
+	// SPEED  DAMPENER ZEROER
+	if (speed > -0.01 && speed < 0.01)
 	{
 		speed = 0;
 	}
+	
+	if (speed != 0 && wkey == false || skey == false)
+	{
+		speed *= 0.992;
+	}
 
 	// TURN LEFT
-	if(akey == true)
+	if (akey == true)
 	{
-		if(speed > 0.1)
+		if (speed > 0.2)
 		{
-			rotation += 0.15; 
-
+			theta += 0.7;
+		}
+		else if (speed < -0.2)
+		{
+			theta -= 0.7;
 		}
 	}
 
 	// TURN RIGHT
-	if(dkey == true)
+	if (dkey == true)
 	{
-		if(speed > 0.1)
+		if (speed > 0.2)
 		{
-			rotation -= 0.15;
+			theta -= 0.7;
+		}
+		else if (speed < -0.2) 
+		{
+			theta += 0.7;
 		}
 	}
 
-	// TURN DAMPENER
-	if(akey == false || dkey == false)
+	if (theta >= 360)
 	{
-		rotation *= 0.992;
+		theta = 0;
 	}
 
-	// TURN ZEROER
-	if(rotation > -0.0001 && rotation < 0.0001)
-	{
-		rotation = 0;
+	if (speed != 0) {
+		float rot = theta * M_PI / 180;
+		
+		py += cos(rot) * speed;
+		px -= sin(rot) * speed;
 	}
-
-	// UPDATE VALUES
-	player_y_position+= speed; 
-	angle = (rotation * M_PI) / 180;
 }
 
 static void display(void)
 {
-	car_control();
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f) ;
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
 
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_TEXTURE_2D);     // Enable use of texture uv mapping
 	glDisable(GL_DEPTH_TEST);    // Depth testing not required (2D only 1 sprite)
 	glDisable(GL_LIGHTING);   // Do not include lighting (yet) 
 	glEnable(GL_BLEND);       // Enable Alpha blending of textures
-	// Screen pixel=(Exisiting screen pixel*(1-Alpha)) + (New pixel * Alpha)
-	// Transparent pixels RGBA = (0,0,0,0) Image pixels = (R,G,B,1) 
-
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
-
-	float x = player_x_position + 16;
-	float y = player_y_position + 30;
-	glTranslatef(x,y,0.0); // 3. Translate to the object's position.
-
-	glRotatef(angle,0.0,0.0,1.0); // 2. Rotate the object.
-
-	glTranslatef(-x,-y,0.0); // 1. Translate to the origin.
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	glBegin(GL_QUADS);
-	glTexCoord2f(frame/19.0,0); 
-	glVertex2i(player_x_position,player_y_position );
-	glTexCoord2f((frame+1)/19.0,0); 
-	glVertex2i(player_x_position+32,player_y_position); 
-	glTexCoord2f((frame+1)/19.0,1); 
-	glVertex2i(player_x_position+32,player_y_position+60);
-	glTexCoord2f(frame/19.0,1); 
-	glVertex2i(player_x_position,player_y_position+60);
-	
-	glEnd();
-	glutSwapBuffers();  // Send message to cause contents of all buffers to be drawn to screen 
+	car(px, py, theta, Tex2);
+
+	glutSwapBuffers();
 	
 }
 
@@ -240,6 +246,13 @@ GLuint glmLoadTextureBMP(char * fname)
     return textureID;
 }
 
+static void idle(int v)
+{
+	car_control();
+	glutPostRedisplay();
+	glutTimerFunc(10, idle, 0);
+}
+
 int _tmain(int argc, char** argv)      // Entry point of program
 {
 	glutInit(&argc, argv);         // Start glut
@@ -249,13 +262,15 @@ int _tmain(int argc, char** argv)      // Entry point of program
 	glutCreateWindow("Sprite based game");
 	glLoadIdentity(); 
 	glMatrixMode(GL_PROJECTION);
-	gluOrtho2D(0.0, 640.0, 0.0, 480.0);  // Map OpenGL to Screen crds 1:1, ignore Z, 2D (X,Y)
-	glmLoadTextureBMP("Spritesheet.bmp");
 
+	gluOrtho2D(0.0, 640.0, 0.0, 480.0);  // Map OpenGL to Screen crds 1:1, ignore Z, 2D (X,Y)
+	Tex1 = glmLoadTextureBMP("Spritesheet.bmp");
+	Tex2 = glmLoadTextureBMP("Spritesheet2.bmp");
 	glutSetKeyRepeat(GLUT_KEY_REPEAT_OFF);
 	glutKeyboardFunc(key_down); 
 	glutKeyboardUpFunc(key_up);
-	glutIdleFunc(idle);
+	//glutIdleFunc(idle);
+	glutTimerFunc(10, idle, 0);
 	glutDisplayFunc(display);
 	glutMainLoop();			    // Start Glut main loop, exit via break
 	return 0;
