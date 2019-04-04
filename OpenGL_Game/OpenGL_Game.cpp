@@ -6,7 +6,11 @@
 #include <freeglut.h>
 #include <cstdlib>
 #include <iostream>
+#include "Car.h"
+
 using namespace std;
+
+Car player;
 
 GLuint Tex1;
 GLuint Tex2;
@@ -76,161 +80,10 @@ GLuint glmLoadTextureBMP(char * fname)
 
 // Global variables
 
-int frame = 1; 
 
-bool wkey = false;
-bool skey = false;
-bool akey = false;
-bool dkey = false;
-
-static void key_down(unsigned char key, int x, int y)
-{
-	switch (key)
-	{
-		case 'w':
-			wkey = true;
-			break;
-		case 's': 
-			skey = true;
-			break;
-		case 'a': 
-			akey = true;
-			break;
-		case 'd': 
-			dkey = true;
-			break;
-		case 'q': glutLeaveMainLoop () ; break; // (Stop!)
-		default: break;
-	}
-} 
-
-static void key_up(unsigned char key, int x, int y)
-{
-	switch (key)
-	{
-		case 'w':
-			wkey = false;
-			break;
-		case 's': 
-			skey = false; 
-			break;
-		case 'a': 
-			akey = false;
-			break;
-		case 'd': 
-			dkey = false;
-			break;
-		default: break;
-	}
-
-}
-
-static void car(float x, float y, float ang, GLuint tex) {
-	glPushMatrix();
-
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, tex);
-	
-	float ox = x + 16;
-	float oy = y + 30;
-	
-	glTranslatef(ox, oy, 0.0); // 3. Translate to the object's position.
-	glRotatef(ang, 0.0, 0.0, 1.0); // 2. Rotate the object.
-	glTranslatef(-ox, -oy, 0.0); // 1. Translate to the origin.
-	glBegin(GL_QUADS);
-		glTexCoord2f(frame / 19.0, 0);
-		glVertex2i(x, y);
-		glTexCoord2f((frame + 1) / 19.0, 0);
-		glVertex2i(x + 32, y);
-		glTexCoord2f((frame + 1) / 19.0, 1);
-		glVertex2i(x + 32, y + 60);
-		glTexCoord2f(frame / 19.0, 1);
-		glVertex2i(x, y + 60);
-	glEnd();
-	glPopMatrix();
-
-}
-
-float px = 100;
-float py = 100;
-float theta = 0;
-float speed = 0;
-
-static void car_control()
-{
-	// FORWARDS
-	if (wkey == true)
-	{
-		speed += 0.1;
-		if (speed > 1)
-		{
-			speed = 1;
-		}
-	}
-
-	// BACKWARDS
-	if (skey == true)
-	{
-		speed -= 0.1;
-		if (speed < -1)
-		{
-			speed = -1;
-		}
-	}
-
-	// SPEED  DAMPENER ZEROER
-	if (speed > -0.01 && speed < 0.01)
-	{
-		speed = 0;
-	}
-	
-	if (speed != 0 && wkey == false || skey == false)
-	{
-		speed *= 0.992;
-	}
-
-	// TURN LEFT
-	if (akey == true)
-	{
-		if (speed > 0.2)
-		{
-			theta += 0.7;
-		}
-		else if (speed < -0.2)
-		{
-			theta -= 0.7;
-		}
-	}
-
-	// TURN RIGHT
-	if (dkey == true)
-	{
-		if (speed > 0.2)
-		{
-			theta -= 0.7;
-		}
-		else if (speed < -0.2) 
-		{
-			theta += 0.7;
-		}
-	}
-
-	if (theta >= 360)
-	{
-		theta = 0;
-	}
-
-	if (speed != 0) {
-		float rot = theta * M_PI / 180;
-		
-		py += cos(rot) * speed;
-		px -= sin(rot) * speed;
-	}
-}
 
 static void display(void)
 {
-	
 
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -240,16 +93,25 @@ static void display(void)
 	glEnable(GL_BLEND);       // Enable Alpha blending of textures
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	
-	car(px, py, theta, Tex1);
-	car(200, 200, 50, Tex2);
+
+	player.draw();
 
 	glutSwapBuffers();
-	
 }
+
+static void key_down(unsigned char key, int x, int y)
+{
+	player.key_down(key, x, y);
+};
+
+static void key_up(unsigned char key, int x, int y)
+{
+	player.key_up(key, x, y);
+};
 
 static void idle(int v)
 {
-	car_control();
+	player.car_control();
 	glutPostRedisplay();
 	glutTimerFunc(10, idle, 0);
 }
@@ -268,8 +130,12 @@ int _tmain(int argc, char** argv)      // Entry point of program
 	Tex1 = glmLoadTextureBMP("Spritesheet.bmp");
 	Tex2 = glmLoadTextureBMP("Spritesheet2.bmp");
 	glutSetKeyRepeat(GLUT_KEY_REPEAT_OFF);
+
+	player.create(200, 200, 50, 0, Tex2);
 	glutKeyboardFunc(key_down); 
 	glutKeyboardUpFunc(key_up);
+
+
 	glutTimerFunc(10, idle, 0);
 	glutDisplayFunc(display);
 	glutMainLoop();			    // Start Glut main loop, exit via break

@@ -1,18 +1,18 @@
 ﻿  OpenGL_Game.cpp
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(141): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(142): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(143): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(144): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(145): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(146): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(147): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(148): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(164): warning C4305: '+=': truncation from 'double' to 'float'
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(174): warning C4305: '-=': truncation from 'double' to 'float'
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(189): warning C4305: '*=': truncation from 'double' to 'float'
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(197): warning C4305: '+=': truncation from 'double' to 'float'
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(201): warning C4305: '-=': truncation from 'double' to 'float'
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(210): warning C4305: '-=': truncation from 'double' to 'float'
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(214): warning C4305: '+=': truncation from 'double' to 'float'
-c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\opengl_game.cpp(224): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(60): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(61): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(62): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(63): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(64): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(65): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(66): warning C4244: 'argument': conversion from 'double' to 'GLfloat', possible loss of data
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(67): warning C4244: 'argument': conversion from 'float' to 'GLint', possible loss of data
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(78): warning C4305: '+=': truncation from 'double' to 'float'
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(88): warning C4305: '-=': truncation from 'double' to 'float'
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(103): warning C4305: '*=': truncation from 'double' to 'float'
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(111): warning C4305: '+=': truncation from 'double' to 'float'
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(115): warning C4305: '-=': truncation from 'double' to 'float'
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(124): warning C4305: '-=': truncation from 'double' to 'float'
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(128): warning C4305: '+=': truncation from 'double' to 'float'
+c:\users\rossh\downloads\opengl-2d-car-game\opengl_game\car.h(138): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   OpenGL_Game.vcxproj -> C:\Users\rossh\Downloads\OpenGL-2D-Car-Game\Debug\OpenGL_Game.exe
