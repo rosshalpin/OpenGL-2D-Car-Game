@@ -9,12 +9,6 @@
 #include "Car.h"
 
 using namespace std;
-
-Car player;
-
-GLuint Tex1;
-GLuint Tex2;
-
 // Function prototype for loading texture method
 GLuint glmLoadTextureBMP(char *);
 
@@ -79,7 +73,12 @@ GLuint glmLoadTextureBMP(char * fname)
 }
 
 // Global variables
+Car player;
+Car NPC;
 
+GLuint Tex1;
+GLuint Tex2;
+GLuint TexTrack;
 
 
 static void display(void)
@@ -92,9 +91,24 @@ static void display(void)
 	glDisable(GL_LIGHTING);   // Do not include lighting (yet) 
 	glEnable(GL_BLEND);       // Enable Alpha blending of textures
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	
 
+	glPushMatrix();
+		glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, TexTrack);
+			glBegin(GL_QUADS);
+			glTexCoord2f(0, 0);
+				glVertex2i(0, 0);
+			glTexCoord2f(1, 0);
+				glVertex2i(640,0);
+			glTexCoord2f(1, 1);
+				glVertex2i(640,480);
+			glTexCoord2f(0, 1);
+				glVertex2i(0,480);
+		glEnd();
+	glPopMatrix();
+	
 	player.draw();
+	NPC.draw();
 
 	glutSwapBuffers();
 }
@@ -125,17 +139,19 @@ int _tmain(int argc, char** argv)      // Entry point of program
 	glutCreateWindow("Sprite based game");
 	glLoadIdentity(); 
 	glMatrixMode(GL_PROJECTION);
-
 	gluOrtho2D(0.0, 640.0, 0.0, 480.0);  // Map OpenGL to Screen crds 1:1, ignore Z, 2D (X,Y)
-	Tex1 = glmLoadTextureBMP("Spritesheet.bmp");
-	Tex2 = glmLoadTextureBMP("Spritesheet2.bmp");
 	glutSetKeyRepeat(GLUT_KEY_REPEAT_OFF);
 
-	player.create(200, 200, 50, 0, Tex2);
+	Tex1 = glmLoadTextureBMP("Spritesheet3D.bmp");
+	Tex2 = glmLoadTextureBMP("Spritesheet23D.bmp");
+	TexTrack = glmLoadTextureBMP("track3.bmp");
+
+	player.create(200, 200, 50, 0, Tex1);
+	NPC.create(400, 400, 20, 0, Tex2);
+
+
 	glutKeyboardFunc(key_down); 
 	glutKeyboardUpFunc(key_up);
-
-
 	glutTimerFunc(10, idle, 0);
 	glutDisplayFunc(display);
 	glutMainLoop();			    // Start Glut main loop, exit via break
