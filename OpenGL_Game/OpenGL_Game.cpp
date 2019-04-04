@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <iostream>
 #include "Car.h"
+#include "Coin.h"
 
 using namespace std;
 // Function prototype for loading texture method
@@ -72,18 +73,65 @@ GLuint glmLoadTextureBMP(char * fname)
 	return textureID;
 }
 
-// Global variables
+// ******************* DEFINE OBJECTS *******************
 Car player;
 Car NPC;
+Car NPC2;
+Car NPC3;
+Car NPC4;
+Car NPC5;
 
+Coin coin1;
+Coin coin2;
+Coin coin3;
+Coin coin4;
+Coin coin5;
+Coin coin6;
+Coin coin7;
+Coin coin8;
+
+// ******************* TEXTURES ******************* 
 GLuint Tex1;
 GLuint Tex2;
 GLuint TexTrack;
+GLuint coinTex;
 
+// Score data and method
+char score_text[20];
+
+static void text(int x, int y, char *string)
+{
+	glDisable(GL_TEXTURE_2D);
+	glColor3f(0.0f, 0.0f, 0.0f);
+	glRasterPos2f(x, y);
+	int len, i;
+	len = (int)strlen(string);
+	for (i = 0; i < len; i++)
+	{
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, string[i]); // Other fonts possible
+	}
+	glColor4f(1.0f, 1.0f, 1.0f, 1.0f);  // Switch back to white
+}
+
+static void background() {
+	glPushMatrix();
+		glEnable(GL_TEXTURE_2D);
+		glBindTexture(GL_TEXTURE_2D, TexTrack);
+		glBegin(GL_QUADS);
+			glTexCoord2f(0, 0);
+			glVertex2i(0, 0);
+			glTexCoord2f(1, 0);
+			glVertex2i(640, 0);
+			glTexCoord2f(1, 1);
+			glVertex2i(640, 480);
+			glTexCoord2f(0, 1);
+			glVertex2i(0, 480);
+		glEnd();
+	glPopMatrix();
+}
 
 static void display(void)
 {
-
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_TEXTURE_2D);     // Enable use of texture uv mapping
@@ -91,24 +139,27 @@ static void display(void)
 	glDisable(GL_LIGHTING);   // Do not include lighting (yet) 
 	glEnable(GL_BLEND);       // Enable Alpha blending of textures
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glPushMatrix();
-		glEnable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, TexTrack);
-			glBegin(GL_QUADS);
-			glTexCoord2f(0, 0);
-				glVertex2i(0, 0);
-			glTexCoord2f(1, 0);
-				glVertex2i(640,0);
-			glTexCoord2f(1, 1);
-				glVertex2i(640,480);
-			glTexCoord2f(0, 1);
-				glVertex2i(0,480);
-		glEnd();
-	glPopMatrix();
+	background();
 	
+	// ******************* DRAW OBJECTS *******************
 	player.draw();
 	NPC.draw();
+	NPC2.draw();
+	NPC3.draw();
+	NPC4.draw();
+	NPC5.draw();
+
+	coin1.draw();
+	coin2.draw();
+	coin3.draw();
+	coin4.draw();
+	coin5.draw();
+	coin6.draw();
+	coin7.draw();
+	coin8.draw();
+
+	sprintf(score_text, "Score: %d", player.score); // Display text 
+	text(530, 30, score_text);
 
 	glutSwapBuffers();
 }
@@ -126,8 +177,63 @@ static void key_up(unsigned char key, int x, int y)
 static void idle(int v)
 {
 	player.car_control();
+	
+	NPC.car_control();
+	NPC2.car_control();
+	NPC3.car_control();
+	NPC4.car_control();
+	NPC5.car_control();
 	glutPostRedisplay();
 	glutTimerFunc(10, idle, 0);
+	
+	//NPC.key_down('w', 418, -7);
+
+	// ******************* COLLISIONS *******************
+	player.collision(NPC, 30);
+	player.collision(NPC2, 30);
+	player.collision(NPC3, 30);
+	player.collision(NPC4, 30);
+	player.collision(NPC5, 30);
+
+	NPC.collision(NPC2, 30);
+	NPC.collision(NPC3, 30);
+	NPC.collision(NPC4, 30);
+	NPC.collision(NPC5, 30);
+
+	NPC2.collision(NPC, 30);
+	NPC2.collision(NPC3, 30);
+	NPC2.collision(NPC4, 30);
+	NPC2.collision(NPC5, 30);
+
+	NPC3.collision(NPC, 30);
+	NPC3.collision(NPC2, 30);
+	NPC3.collision(NPC4, 30);
+	NPC3.collision(NPC5, 30);
+
+	NPC4.collision(NPC, 30);
+	NPC4.collision(NPC2, 30);
+	NPC4.collision(NPC3, 30);
+	NPC4.collision(NPC5, 30);
+
+	NPC5.collision(NPC, 30);
+	NPC5.collision(NPC2, 30);
+	NPC5.collision(NPC3, 30);
+	NPC5.collision(NPC4, 30);
+
+	player.collision(coin1, 18);
+	player.collision(coin2, 18);
+	player.collision(coin3, 18);
+	player.collision(coin4, 18);
+	player.collision(coin5, 18);
+	player.collision(coin6, 18);
+	player.collision(coin7, 18);
+	player.collision(coin8, 18);
+	
+}
+
+void onMouse(int button, int state, int x, int y)
+{
+	cout <<  x << " " << y << " " << endl;
 }
 
 int _tmain(int argc, char** argv)      // Entry point of program
@@ -145,13 +251,29 @@ int _tmain(int argc, char** argv)      // Entry point of program
 	Tex1 = glmLoadTextureBMP("Spritesheet3D.bmp");
 	Tex2 = glmLoadTextureBMP("Spritesheet23D.bmp");
 	TexTrack = glmLoadTextureBMP("track3.bmp");
+	coinTex = glmLoadTextureBMP("coin.bmp");
+	
+	// ******************* CREATE OBJECTS *******************
+	player.create(320, 50, 0, 0, Tex1);
+	NPC.create(360, 200, 20, 0, Tex2);
+	NPC2.create(250, 280, 10, 0, Tex1);
+	NPC3.create(150, 280, 0, 0, Tex2);
+	NPC4.create(190, 230, 160, 0, Tex1);
+	NPC5.create(280, 200, 270, 0, Tex2);
 
-	player.create(200, 200, 50, 0, Tex1);
-	NPC.create(400, 400, 20, 0, Tex2);
+	coin1.create(182, 111, coinTex);
+	coin2.create(313, 112, coinTex);
+	coin3.create(467, 116, coinTex);
+	coin4.create(547, 224, coinTex);
+	coin5.create(496, 314, coinTex);
+	coin6.create(304, 325, coinTex);
+	coin7.create(170, 322, coinTex);
+	coin8.create(84, 230, coinTex);
 
 
 	glutKeyboardFunc(key_down); 
 	glutKeyboardUpFunc(key_up);
+	glutMouseFunc(onMouse);
 	glutTimerFunc(10, idle, 0);
 	glutDisplayFunc(display);
 	glutMainLoop();			    // Start Glut main loop, exit via break

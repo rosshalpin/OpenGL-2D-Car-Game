@@ -6,6 +6,9 @@
 #include <freeglut.h>
 #include <cstdlib>
 #include <iostream>
+#include "Coin.h"
+#include <variant>
+using namespace std;
 
 class Car
 {
@@ -14,10 +17,13 @@ class Car
 	public: float y;
 	public: float theta;
 	public: float speed;
+	public: float acceleration = 0.1;
 	public: bool wkey;
 	public: bool skey;
 	public: bool akey;
 	public: bool dkey;
+
+	public: int score;
 
 	public: int frame = 1;
 
@@ -26,6 +32,7 @@ class Car
 	public: void Car::key_down(unsigned char key, int x, int y);
 	public: void Car::key_up(unsigned char key, int x, int y);
 	public: void Car::car_control();
+	public: template <typename T> void collision(T& colObj, int limit);
 };
 
 void Car::create(float x_, float y_, float theta_, float speed_, GLuint tex_)
@@ -73,7 +80,7 @@ void Car::car_control()
 	// FORWARDS
 	if (wkey == true)
 	{
-		speed += 0.1;
+		speed += acceleration;
 		if (speed > 1)
 		{
 			speed = 1;
@@ -83,7 +90,7 @@ void Car::car_control()
 	// BACKWARDS
 	if (skey == true)
 	{
-		speed -= 0.1;
+		speed -= acceleration;
 		if (speed < -1)
 		{
 			speed = -1;
@@ -134,14 +141,42 @@ void Car::car_control()
 
 	if (speed != 0) {
 		float rot = theta * M_PI / 180;
-
 		y += cos(rot) * speed;
 		x -= sin(rot) * speed;
 	}
 }
 
+template <typename T> void Car::collision(T& colObj, int limit)
+{
+	float dist = sqrt(((colObj.x - x)*(colObj.x - x)) + ((colObj.y - y)*(colObj.y - y)));
+	//cout << dist << endl;
+	
+	if (dist < limit)
+	{
+		if(typeid(colObj).name() == typeid(Car).name())
+		{
+			float rot = theta * M_PI / 180;
+			colObj.speed = speed;
+			colObj.y += cos(rot) * speed;
+			colObj.x -= sin(rot) * speed;
+		}
+
+		if (typeid(colObj).name() == typeid(Coin).name())
+		{
+			score += 1;
+			colObj.y = -100;
+			colObj.x - 0;
+		}
+	}
+	else 
+	{
+		acceleration = 0.1;
+	}
+}
+
 void Car::key_down(unsigned char key, int x, int y)
 {
+	cout << key <<  endl;
 	switch (key)
 	{
 	case 'w':
@@ -163,6 +198,7 @@ void Car::key_down(unsigned char key, int x, int y)
 
 void Car::key_up(unsigned char key, int x, int y)
 {
+	
 	switch (key)
 	{
 	case 'w':
